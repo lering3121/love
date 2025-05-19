@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>爱心名字</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .heart-container {
+            position: relative;
+            width: 1000px;
+            height: 1000px;
+        }
+        
+        .heart {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .heart1 {
+            color: rgba(255, 105, 180, 0.95);
+            transform: translateX(-100px) scale(1.05);
+            z-index: 1;
+            animation: pulse1 2s infinite alternate;
+        }
+        
+        .heart2 {
+            color: rgba(255, 20, 147, 0.95);
+            transform: translateX(100px) scale(1.05);
+            z-index: 1;
+            animation: pulse2 2s infinite alternate;
+        }
+        
+        @keyframes pulse1 {
+            0% {
+                transform: translateX(-100px) scale(1.05);
+            }
+            100% {
+                transform: translateX(-100px) scale(1.15) rotate(2deg);
+            }
+        }
+        
+        @keyframes pulse2 {
+            0% {
+                transform: translateX(100px) scale(1.05);
+            }
+            100% {
+                transform: translateX(100px) scale(1.15) rotate(-2deg);
+            }
+        }
+        
+        .message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 24px;
+            text-align: center;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 105, 180, 0.8);
+            z-index: 3;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 12px 20px;
+            border-radius: 30px;
+            animation: glow 2s infinite alternate;
+        }
+        
+        @keyframes glow {
+            0% {
+                text-shadow: 0 0 10px rgba(255, 105, 180, 0.8);
+            }
+            100% {
+                text-shadow: 0 0 20px rgba(255, 105, 180, 1);
+            }
+        }
+        
+        .letter-bg {
+            position: absolute;
+            color: rgba(255, 105, 180, 0.3);
+            font-size: 14px;
+            user-select: none;
+            transition: opacity 0.5s ease;
+        }
+        
+        .name-text {
+            position: absolute;
+            font-size: 16px;
+            user-select: none;
+            z-index: 2;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.9);
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .name-text:hover {
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="background" id="background"></div>
+    
+    <div class="heart-container">
+        <div class="heart heart1" id="heart1"></div>
+        <div class="heart heart2" id="heart2"></div>
+        <div class="message">❤️ 我永远为你着迷</div>
+    </div>
+
+    <script>
+        // 设置名字
+        const name1 = "❤"; // 第一个人的名字改为桃心符号
+        const name2 = "♥"; // 第二个人的名字改为桃心符号
+        
+        // 创建背景文字
+        function createBackground() {
+            const bg = document.getElementById('background');
+            const letters = "LOVEIU";
+            const rows = Math.ceil(window.innerHeight / 20);
+            const cols = Math.ceil(window.innerWidth / 20);
+            
+            for (let i = 0; i < rows * cols; i++) {
+                const span = document.createElement('span');
+                span.className = 'letter-bg';
+                span.textContent = letters[Math.floor(Math.random() * letters.length)];
+                span.style.position = 'absolute';
+                span.style.left = `${(i % cols) * 20}px`;
+                span.style.top = `${Math.floor(i / cols) * 20}px`;
+                span.style.opacity = Math.random() * 0.5 + 0.3;
+                bg.appendChild(span);
+            }
+            
+            // 动画效果
+            setInterval(() => {
+                const spans = bg.querySelectorAll('.letter-bg');
+                spans.forEach(span => {
+                    if (Math.random() > 0.98) {
+                        span.style.opacity = Math.random() * 0.5 + 0.3;
+                        span.textContent = letters[Math.floor(Math.random() * letters.length)];
+                    }
+                });
+            }, 100);
+        }
+        
+        // 创建爱心
+        function createHeart(containerId, name, isFirstHeart) {
+            const container = document.getElementById(containerId);
+            
+            // 先清空容器
+            container.innerHTML = '';
+            
+            const heartPath = [];
+            
+            // 创建爱心点坐标，降低密度
+            for (let i = 0; i < 360; i += 0.5) {
+                const rad = i * Math.PI / 180;
+                const x = 16 * Math.pow(Math.sin(rad), 3);
+                const y = -(13 * Math.cos(rad) - 5 * Math.cos(2 * rad) - 2 * Math.cos(3 * rad) - Math.cos(4 * rad));
+                heartPath.push({ x: x * 12.5 + 500, y: y * 12.5 + 500 });
+            }
+            
+            // 不需要重复桃心符号太多次
+            let displayName = name;
+            
+            // 计算文字尺寸和重复次数，减少文字密度
+            const charSize = Math.max(20, Math.min(28, 1000 / 20)); // 桃心符号尺寸调小
+            // 减少重复次数，使桃心不那么密集
+            const repeatCount = 120; // 固定数量的桃心
+            
+            // 在爱心路径上均匀分布文字
+            const points = selectPointsFromPath(heartPath, repeatCount);
+            
+            points.forEach((point, index) => {
+                const span = document.createElement('span');
+                span.textContent = displayName;
+                span.className = 'name-text';
+                span.style.position = 'absolute';
+                span.style.left = `${point.x}px`;
+                span.style.top = `${point.y}px`;
+                span.style.fontSize = `${charSize}px`;
+                span.style.opacity = '0';
+                span.style.animation = `fadeIn 0.5s ${index * 5}ms forwards, float ${2 + Math.random() * 2}s infinite ${Math.random() * 1000}ms ease-in-out`;
+                
+                // 设置颜色，使两个爱心颜色有区别
+                if (isFirstHeart) {
+                    span.style.color = 'rgba(255, 105, 180, 0.95)';
+                } else {
+                    span.style.color = 'rgba(255, 20, 147, 0.95)';
+                }
+                
+                const keyframes = `
+                @keyframes float {
+                    0%, 100% {
+                        transform: translate(0, 0);
+                    }
+                    50% {
+                        transform: translate(${Math.random() * 4 - 2}px, ${Math.random() * 4 - 2}px);
+                    }
+                }
+                
+                @keyframes fadeIn {
+                    0% {
+                        opacity: 0;
+                    }
+                    100% {
+                        opacity: 1;
+                    }
+                }`;
+                
+                const style = document.createElement('style');
+                style.appendChild(document.createTextNode(keyframes));
+                document.head.appendChild(style);
+                
+                container.appendChild(span);
+            });
+        }
+        
+        // 从路径中选择均匀分布的点
+        function selectPointsFromPath(path, count) {
+            const selectedPoints = [];
+            const step = Math.floor(path.length / count);
+            
+            for (let i = 0; i < count; i++) {
+                const point = path[i * step];
+                if (point) {
+                    selectedPoints.push(point);
+                }
+            }
+            
+            return selectedPoints;
+        }
+        
+        // 添加漂浮的小爱心
+        function addFloatingHearts() {
+            const container = document.querySelector('.heart-container');
+            
+            setInterval(() => {
+                if (Math.random() > 0.9) { // 降低生成频率
+                    const heart = document.createElement('div');
+                    heart.innerHTML = '❤';
+                    heart.style.position = 'absolute';
+                    heart.style.color = `rgba(255, ${Math.floor(Math.random() * 150)}, ${Math.floor(Math.random() * 150)}, ${Math.random() * 0.5 + 0.3})`;
+                    heart.style.fontSize = `${Math.random() * 24 + 16}px`;
+                    
+                    // 随机位置
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = Math.random() * 450 + 50;
+                    const x = 500 + Math.cos(angle) * distance;
+                    const y = 500 + Math.sin(angle) * distance;
+                    
+                    heart.style.left = `${x}px`;
+                    heart.style.top = `${y}px`;
+                    heart.style.animation = `floatUp ${Math.random() * 5 + 3}s forwards`;
+                    
+                    const keyframes = `
+                    @keyframes floatUp {
+                        0% {
+                            transform: translate(0, 0) scale(0);
+                            opacity: 0;
+                        }
+                        10% {
+                            transform: translate(0, 0) scale(1);
+                            opacity: 1;
+                        }
+                        90% {
+                            opacity: 1;
+                        }
+                        100% {
+                            transform: translate(${Math.random() * 100 - 50}px, ${-Math.random() * 150 - 50}px);
+                            opacity: 0;
+                        }
+                    }`;
+                    
+                    const style = document.createElement('style');
+                    style.appendChild(document.createTextNode(keyframes));
+                    document.head.appendChild(style);
+                    
+                    container.appendChild(heart);
+                    
+                    // 自动删除
+                    setTimeout(() => {
+                        heart.remove();
+                        style.remove();
+                    }, 8000);
+                }
+            }, 300);
+        }
+        
+        // 初始化
+        window.onload = function() {
+            createBackground();
+            createHeart('heart1', name1, true);
+            createHeart('heart2', name2, false);
+            addFloatingHearts();
+        };
+    </script>
+</body>
+</html> 
